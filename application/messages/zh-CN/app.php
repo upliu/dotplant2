@@ -406,7 +406,7 @@ return [
     'EAV Table Name' => 'EAV表名',
     'Edit' => '编辑',
     'Edit Dynamic Content' => '',
-    'Edit category' => '',
+    'Edit category' => '编辑分类',
     'Edit contragent' => '',
     'Edit customer' => '',
     'Edit order stage' => '',
@@ -1352,4 +1352,8 @@ return [
     'unnecessary' => '',
     '{currentModuleName} {componentName} is flushed' => '{currentModuleName} {componentName} 删除',
     '{n, plural, one{item} other{items}} in the amount of' => '',
+
+    'Show products in category' => '显示该分类下的产品',
+    'Create product in this category' => '在该分类下新建产品',
+    'Create category' => '新建分类',
 ];
