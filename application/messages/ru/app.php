@@ -34,6 +34,7 @@ return [
     'Add a new product to order' => 'Добавить новый товар к заказу',
     'Add auth client' => 'Добавить клиент идентификации',
     'Add condition' => 'Добавить условие',
+    'Add child page' => 'Добавить вложенную страницу',
     'Add files..' => 'Добавить файлы',
     'Add items to your wishlist' => 'Добавьте товары в список желаний',
     'Add new component' => 'Добавить новый компонент',
@@ -778,8 +779,8 @@ return [
     'Payer information' => 'Информация о плательщике',
     'Payment' => 'Оплата',
     'Payment available' => 'Платеж доступен',
-    'Payment type' => 'Способ оплаты',
-    'Payment type ID' => 'ID способа оплаты',
+    'Payment Type' => 'Способ оплаты',
+    'Payment Type ID' => 'ID способа оплаты',
     'Payment types' => 'Способы оплаты',
     'Payment error' => 'Ошибка оплаты',
     'Payment method selection' => 'Выбор способа оплаты',
@@ -1292,4 +1293,5 @@ return [
     'You have doubled slugs. Fix it please.' => 'У вас есть дублирующиеся урл. Исправьте это, пожалуйста.',
     'Main' => 'Основное',
     'Addons' => 'Дополнения',
+    'Transaction success' => 'Успешная транзакция'
 ];

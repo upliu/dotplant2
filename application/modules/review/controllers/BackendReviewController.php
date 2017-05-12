@@ -261,11 +261,7 @@ class BackendReviewController extends \app\backend\components\BackendController
 
         /** @var ActiveRecord $class */
         $class = $object->object_class;
-        $list = [
-            Product::className(),
-            Category::className(),
-            Page::className(),
-        ];
+        $list = Object::find()->select("object_class")->column();
         if (!in_array($class, $list)) {
             return $result;
         }
@@ -279,7 +275,8 @@ class BackendReviewController extends \app\backend\components\BackendController
             function (&$val) use ($class)
             {
                 if (null !== $model = $class::findOne(['id' => $val['id']])) {
-                    if (Product::className() === $model->className()) {
+                    $product = Yii::$container->get(Product::class);
+                    if (get_class($product) === $model->className()) {
                         $val['url'] = Url::toRoute([
                             '@product',
                             'model' => $model,

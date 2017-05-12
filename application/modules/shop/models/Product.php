@@ -60,6 +60,7 @@ use yii\web\ServerErrorHttpException;
  * Relations:
  * @property Category $category
  * @property Product[] $children
+ * @property Category $mainCategory
  */
 
 class Product extends ActiveRecord implements ImportableInterface, ExportableInterface, \JsonSerializable
@@ -67,16 +68,16 @@ class Product extends ActiveRecord implements ImportableInterface, ExportableInt
     use GetImages;
     use HasAddonTrait;
 
-    private static $identity_map = [];
-    private static $slug_to_id = [];
-    private $category_ids = null;
+    protected static $identity_map = [];
+    protected static $slug_to_id = [];
+    protected $category_ids = null;
 
     public $relatedProductsArray = [];
 
     /**
      * @var null|WarehouseProduct[] Stores warehouses state of product. Use Product::getWarehousesState() to retrieve
      */
-    private $activeWarehousesState = null;
+    protected $activeWarehousesState = null;
 
     /**
      * @inheritdoc
@@ -219,8 +220,9 @@ class Product extends ActiveRecord implements ImportableInterface, ExportableInt
      */
     public function search($params)
     {
+        $product = Yii::$container->get(Product::class);
         /* @var $query \yii\db\ActiveQuery */
-        $query = self::find()->where(['parent_id' => 0])->with('images');
+        $query = $product::find()->where(['parent_id' => 0])->with('images');
         $dataProvider = new ActiveDataProvider(
             [
                 'query' => $query,
@@ -309,13 +311,14 @@ class Product extends ActiveRecord implements ImportableInterface, ExportableInt
                     $tags[] = ActiveRecordHelper::getObjectTag(Category::className(), $inCategoryId);
                 }
                 $model = $query->one();
+                $product = Yii::$container->get(Product::class);
                 /**
                  * @var self|null $model
                  */
                 if (is_null($model)) {
-                    $tags[] = ActiveRecordHelper::getCommonTag(Product::className());
+                    $tags[] = ActiveRecordHelper::getCommonTag(get_class($product));
                 } else {
-                    $tags[] = ActiveRecordHelper::getObjectTag(Product::className(), $model->id);
+                    $tags[] = ActiveRecordHelper::getObjectTag(get_class($product), $model->id);
                 }
                 Yii::$app->cache->set(
                     $cacheKey,
@@ -363,7 +366,8 @@ class Product extends ActiveRecord implements ImportableInterface, ExportableInt
      */
     public function getRelatedProducts()
     {
-        return $this->hasMany(Product::className(), ['id' => 'related_product_id'])
+        $product = Yii::$container->get(Product::class);
+        return $this->hasMany(get_class($product), ['id' => 'related_product_id'])
             ->viaTable(
                 RelatedProduct::tableName(),
                 ['product_id' => 'id'],
@@ -610,15 +614,6 @@ class Product extends ActiveRecord implements ImportableInterface, ExportableInt
                 $ids = explode($multipleValuesDelimiter, $fields['relatedProducts']);
                 $this->relatedProductsArray=$ids;
                 $this->saveRelatedProducts();
-//                $this->unlinkAll('relatedProducts', true);
-//
-//                foreach ($ids as $index => $id) {
-//                    $product = Product::findById($id);
-//                    $this->link('relatedProduct', $product, ['sort_order'=>$index]);
-//                }
-
-
-
             }
         }
     }
@@ -631,7 +626,7 @@ class Product extends ActiveRecord implements ImportableInterface, ExportableInt
      * @param array $additionalFields
      * @return array|bool
      */
-    private function unpackCategories(array $fields, $multipleValuesDelimiter, array $additionalFields)
+    protected function unpackCategories(array $fields, $multipleValuesDelimiter, array $additionalFields)
     {
         $categories = isset($fields['categories']) ? $fields['categories'] : (isset($fields['category']) ? $fields['category'] : false);
         if ($categories === false || empty($fields['categories'])) {
@@ -1163,9 +1158,9 @@ class Product extends ActiveRecord implements ImportableInterface, ExportableInt
 
     public function getCacheTags()
     {
-
+        $product = Yii::$container->get(Product::class);
         $tags = [
-            ActiveRecordHelper::getObjectTag(self::className(), $this->id),
+            ActiveRecordHelper::getObjectTag(get_class($product), $this->id),
         ];
         $category = $this->getMainCategory();
         $tags [] = ActiveRecordHelper::getObjectTag(Category::className(), $category->id);

@@ -2,6 +2,7 @@
 
 namespace app\modules\seo\controllers;
 
+use app\backend\actions\UpdateEditable;
 use app\backend\components\BackendController;
 use app\modules\shop\models\Category;
 use app\modules\shop\models\OrderTransaction;
@@ -54,6 +55,22 @@ class ManageController extends BackendController
               'duration' => 24 * 60 * 60,
               'dependency' => ActiveRecordHelper::getCommonTag(Config::className()),
             ]
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function actions()
+    {
+        return [
+            'update-editable-counter' => [
+                'class' => UpdateEditable::class,
+                'modelName' => get_class(Yii::$container->get(Counter::class)),
+                'allowedAttributes' => [
+                    'position' => [Counter::class, "updateInfoForEditable"],
+                ],
+            ],
         ];
     }
 
@@ -678,17 +695,18 @@ class ManageController extends BackendController
         if (!empty($orderTransaction->order->items)) {
             $products = [];
             foreach ($orderTransaction->order->items as $item) {
-                $product = Product::findById($item->product_id, null, null);
-                if (empty($product)) {
+                $product = Yii::$container->get(Product::class);
+                $productModel = $product::findById($item->product_id, null, null);
+                if (empty($productModel)) {
                     continue;
                 }
-                $category = Category::findById($product->main_category_id);
+                $category = Category::findById($productModel->main_category_id);
                 $category = empty($category) ? 'Магазин' : str_replace('\'', '', $category->name);
 
                 $products[] = [
-                    'id' => $product->id,
-                    'name' => str_replace('\'', '', $product->name),
-                    'price' => number_format($product->price, 2, '.', ''),
+                    'id' => $productModel->id,
+                    'name' => str_replace('\'', '', $productModel->name),
+                    'price' => number_format($productModel->price, 2, '.', ''),
                     'category' => $category,
                     'qnt' => $item->quantity
                 ];

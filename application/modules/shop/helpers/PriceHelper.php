@@ -56,28 +56,9 @@ class PriceHelper
         foreach ($specialPriceList as $specialPriceRow) {
             $class = $specialPriceRow->class;
             $handler = $specialPriceRow->handler;
-                $price = $class::$handler($product, $order, $specialPriceRow, $price);
+            $price = $class::$handler($product, $order, $specialPriceRow, $price, $quantity);
         }
-
-
         $resultingPrice = $price*$quantity;
-
-        // count product addons here
-        /** @var \app\modules\shop\models\Addon[] $addons */
-//        $addons = $product->bindedAddons;
-//        foreach ($addons as $addon) {
-//            // no discounts for addons binded to product for now
-//            // no quantity support for such binded addons yet
-//            if ($addon->price_is_multiplier) {
-//
-//            }
-//            else {
-//
-//                $resultingPrice += round(
-//                    $addon->price
-//                    , 2);
-//            }
-//        }
 
         return $resultingPrice;
     }

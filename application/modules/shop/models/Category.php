@@ -6,6 +6,7 @@ use app\behaviors\CleanRelations;
 use app\behaviors\Tree;
 use app\components\Helper;
 use app\models\Object;
+use app\modules\data\components\ImportableInterface;
 use app\modules\shop\models\FilterSets;
 use app\properties\HasProperties;
 use app\traits\GetImages;
@@ -42,7 +43,7 @@ use yii\helpers\Url;
  * @property Category[] $children
  * @property Category $parent
  */
-class Category extends ActiveRecord implements \JsonSerializable
+class Category extends ActiveRecord implements \JsonSerializable, ImportableInterface
 {
     use GetImages;
 
@@ -556,12 +557,13 @@ class Category extends ActiveRecord implements \JsonSerializable
         if (!parent::beforeDelete()) {
             return false;
         }
-        $productObject = Object::getForClass(Product::className());
+        $product = Yii::$container->get(Product::class);
+        $productObject = Object::getForClass(get_class($product));
         switch ($this->deleteMode) {
             case self::DELETE_MODE_ALL:
                 $products =
                     !is_null($productObject)
-                        ? Product::find()
+                        ? $product::find()
                         ->join(
                             'INNER JOIN',
                             $productObject->categories_table_name . ' pc',
@@ -572,12 +574,12 @@ class Category extends ActiveRecord implements \JsonSerializable
                         : [];
                 break;
             case self::DELETE_MODE_MAIN_CATEGORY:
-                $products = Product::findAll(['main_category_id' => $this->id]);
+                $products = $product::findAll(['main_category_id' => $this->id]);
                 break;
             default:
                 $products =
                     !is_null($productObject)
-                        ? Product::find()
+                        ? $product::find()
                         ->join(
                             'INNER JOIN',
                             $productObject->categories_table_name . ' pc',
@@ -717,18 +719,19 @@ class Category extends ActiveRecord implements \JsonSerializable
     }
 
     /**
-     * @param int|Product|null $product
+     * @param int|Product|null $productModel
      * @param bool $asMainCategory
      * @return bool
      */
-    public function linkProduct($product = null, $asMainCategory = false)
+    public function linkProduct($productModel = null, $asMainCategory = false)
     {
-        if ($product instanceof Product) {
-            return $product->linkToCategory($this->id, $asMainCategory);
-        } elseif (is_int($product) || is_string($product)) {
-            $product = intval($product);
-            if (null !== $product = Product::findById($product, null)) {
-                return $product->linkToCategory($this->id, $asMainCategory);
+        if ($productModel instanceof Product) {
+            return $productModel->linkToCategory($this->id, $asMainCategory);
+        } elseif (is_int($productModel) || is_string($productModel)) {
+            $productModel = intval($productModel);
+            $product = Yii::$container->get(Product::class);
+            if (null !== $productModel = $product::findById($productModel, null)) {
+                return $productModel->linkToCategory($this->id, $asMainCategory);
             }
         }
 
@@ -749,5 +752,41 @@ class Category extends ActiveRecord implements \JsonSerializable
     public function jsonSerialize()
     {
         return ($this->className() . ':' . $this->id);
+    }
+
+    /**
+     * Process fields before the actual model is saved(inserted or updated)
+     * @param array $fields
+     * @param $multipleValuesDelimiter
+     * @param array $additionalFields
+     */
+    public function processImportBeforeSave(array $fields, $multipleValuesDelimiter, array $additionalFields)
+    {
+        $_attributes = $this->attributes();
+        foreach ($fields as $key => $value) {
+            if (in_array($key, $_attributes)) {
+                $this->$key = $value;
+            }
+        }
+
+        if (empty($this->slug)) {
+            $this->slug = Helper::createSlug($this->name);
+        } elseif (mb_strlen($this->slug) > 80) {
+            $this->slug = mb_substr($this->slug, 0, 80);
+        }
+
+        if (empty($this->name)) {
+            $this->name = 'unnamed-category';
+        }
+    }
+
+    /**
+     * Process fields after the actual model is saved(inserted or updated)
+     * @param array $fields
+     * @param $multipleValuesDelimiter
+     * @param array $additionalFields
+     */
+    public function processImportAfterSave(array $fields, $multipleValuesDelimiter, array $additionalFields)
+    {
     }
 }

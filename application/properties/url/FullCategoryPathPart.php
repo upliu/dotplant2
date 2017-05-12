@@ -3,6 +3,7 @@
 namespace app\properties\url;
 
 use app\modules\shop\models\Category;
+use app\modules\shop\models\Product;
 use devgroup\TagDependencyHelper\ActiveRecordHelper;
 use Yii;
 
@@ -20,6 +21,11 @@ class FullCategoryPathPart extends CategoryPart
         $used_params[] = $this->model_category_attribute;
 
         $attribute_name = $this->model_category_attribute;
+        if ($this->model === null && $route === "shop/product/show") {
+            $product = Yii::$container->get(Product::class);
+            $this->model = $product::findById(intval($parameters["model_id"]));
+            $used_params[] = 'model_id';
+        }
         $category_id = $this->model->$attribute_name;
 
         /** @var Category $category */

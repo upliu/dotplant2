@@ -9,8 +9,6 @@ use kartik\icons\Icon;
 use app\backend\components\ActiveForm;
 use kartik\widgets\DateTimePicker;
 use yii\data\ActiveDataProvider;
-use app\backend\components\Helper;
-use app\modules\shop\ShopModule;
 use yii\helpers\Url;
 
 /**
@@ -98,17 +96,17 @@ $this->params['breadcrumbs'][] = $this->title;
     )
     ?>
 </div>
-<?php $this->endBlock('submit'); ?>
+<?php $this->endBlock(); ?>
 
 <div class="col-md-12">
     <div class="row">
-        <ul class="nav nav-tabs">
-            <li class="active"><a href="#tab-main" data-toggle="tab"><?= Yii::t('app', 'Main') ?></a></li>
-            <li><a href="#tab-seo" data-toggle="tab"><?= Yii::t('app', 'SEO') ?></a></li>
-            <?php if (false === $model->isNewRecord): ?><li><a href="#tab-images" data-toggle="tab"><?= Yii::t('app', 'Images') ?></a></li><?php endif; ?>
-            <li><a href="#tab-properties" data-toggle="tab"><?= Yii::t('app', 'Properties') ?></a></li>
-            <li><a href="#tab-addons" data-toggle="tab"><?= Yii::t('app', 'Addons') ?></a></li>
-            <?php if (!empty($model->options)): ?><li><a href="#tab-options" data-toggle="tab"><?= Yii::t('app', 'Product Options') ?></a></li><?php endif; ?>
+        <ul class="nav nav-tabs product-tabs">
+            <li class="active"><a id="product-tab-main" href="#tab-main" data-toggle="tab"><?= Yii::t('app', 'Main') ?></a></li>
+            <li><a id="product-tab-seo" href="#tab-seo" data-toggle="tab"><?= Yii::t('app', 'SEO') ?></a></li>
+            <?php if (false === $model->isNewRecord): ?><li><a id="product-tab-images" href="#tab-images" data-toggle="tab"><?= Yii::t('app', 'Images') ?></a></li><?php endif; ?>
+            <li><a id="product-tab-properties" href="#tab-properties" data-toggle="tab"><?= Yii::t('app', 'Properties') ?></a></li>
+            <li><a id="product-tab-addons" href="#tab-addons" data-toggle="tab"><?= Yii::t('app', 'Addons') ?></a></li>
+            <?php if (!empty($model->options)): ?><li><a id="product-tab-options" href="#tab-options" data-toggle="tab"><?= Yii::t('app', 'Product Options') ?></a></li><?php endif; ?>
         </ul>
     </div>
 </div>
@@ -391,6 +389,7 @@ $this->params['breadcrumbs'][] = $this->title;
         <section class="col-md-12">
             <article>
                 <?php
+                $product = Yii::$container->get(Product::class);
                 if (!empty($model->options)) : ?>
                     <?php
                     BackendWidget::begin(
@@ -405,7 +404,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     GridView::widget([
                         'dataProvider' =>  $dataProvider = new ActiveDataProvider(
                             [
-                                'query' => Product::find()
+                                'query' => $product::find()
                                     ->where(['parent_id' => $model->id]),
                             ]
                         ),
@@ -460,14 +459,11 @@ $this->trigger(BackendProductController::EVENT_BACKEND_PRODUCT_EDIT_FORM, $event
 <?php
 $tab_errors = <<<JS
 jQuery('#product-form').on('afterValidate', function (e) {
-
     jQuery('.nav-tabs a').removeClass('has-error');
 
-    \$errors = jQuery('#product-form').find('.form-group.has-error');
+    var \$errors = jQuery('#product-form').find('.form-group.has-error');
     if ('undefined' !== typeof(\$errors) && \$errors.length > 0) {
-
         \$errors.each(function(i, e) {
-
             var tab_id = $(e).closest('.tab-pane').attr('id');
             jQuery('#product-form').find('[data-toggle=tab][href="#' + tab_id + '"]').addClass('has-error');
         });
@@ -475,6 +471,11 @@ jQuery('#product-form').on('afterValidate', function (e) {
     }
     return true;
 });
+
+jQuery(".product-tabs a[data-toggle='tab']").on("shown.bs.tab", function(event) {
+    localStorage.setItem("productActiveTab", "#" + event.target.id);
+});
+
+jQuery(localStorage.getItem("productActiveTab")).click();
 JS;
 $this->registerJs($tab_errors);
-?>

@@ -1078,8 +1078,8 @@ class m150531_084444_new_init extends Migration
                 'id' => Schema::TYPE_PK,
                 'name' => 'VARCHAR(255) NOT NULL DEFAULT \'\'',
                 'slider_handler_id' => 'INT UNSIGNED DEFAULT 0',
-                'image_width' => 'INT UNSIGNED DEFAULT 0',
-                'image_height' => 'INT UNSIGNED DEFAULT 0',
+                'image_width' => 'INT UNSIGNED DEFAULT 300',
+                'image_height' => 'INT UNSIGNED DEFAULT 300',
                 'resize_big_images' => 'TINYINT(1) NOT NULL DEFAULT 1',
                 'resize_small_images' => 'TINYINT(1) NOT NULL DEFAULT 0',
                 'css_class' => 'VARCHAR(255) NOT NULL DEFAULT \'\'',
@@ -1115,22 +1115,32 @@ class m150531_084444_new_init extends Migration
         $this->createTable(
             '{{%dynagrid}}',
             [
-                'id' => Schema::TYPE_STRING . ' DEFAULT \'\' PRIMARY KEY',
-                'filter_id' => Schema::TYPE_STRING,
-                'sort_id' => Schema::TYPE_STRING,
+                'id' => $this->string(100)->defaultValue(''),
+                'filter_id' => $this->string(100),
+                'sort_id' => $this->string(100),
                 'data' => Schema::TYPE_TEXT,
             ]
+        );
+        $this->addPrimaryKey(
+            'pk-id',
+            '{{%dynagrid}}',
+            'id'
         );
         $this->createTable(
             '{{%dynagrid_dtl}}',
             [
-                'id' => Schema::TYPE_STRING . ' DEFAULT \'\' PRIMARY KEY',
-                'category' => Schema::TYPE_STRING,
-                'name' => Schema::TYPE_STRING,
+                'id' => $this->string(128)->defaultValue(''),
+                'category' => $this->string(10),
+                'name' => $this->string(150),
                 'data' => Schema::TYPE_TEXT,
-                'dynagrid_id' => Schema::TYPE_STRING,
+                'dynagrid_id' => $this->string(100),
                 'UNIQUE `uniq_dtl` (`name`, `category`, `dynagrid_id`)',
             ]
+        );
+        $this->addPrimaryKey(
+            'pk-id',
+            '{{%dynagrid_dtl}}',
+            'id'
         );
         $this->createTable(
             CurrencyRateProvider::tableName(),
@@ -1280,7 +1290,6 @@ class m150531_084444_new_init extends Migration
                 'step_value' => Schema::TYPE_INTEGER . ' NOT NULL DEFAULT 1',
                 'require_review' => Schema::TYPE_BOOLEAN . ' DEFAULT 0',
                 'allow_guest' => 'TINYINT(1) DEFAULT \'0\'',
-                'KEY `ix-rating_item-rating_group` (`rating_group`)',
             ]
         );
         $this->createTable(
@@ -1801,7 +1810,6 @@ class m150531_084444_new_init extends Migration
                 'model_name' => 'VARCHAR(255) NOT NULL',
                 'model_id' => 'VARCHAR(255) NOT NULL',
                 'KEY `ix-link_anchor_id` (`link_anchor_id`)',
-                'KEY `model_name` (`model_name`, `model_id`)',
             ],
             $tableOptions
         );

@@ -22,14 +22,14 @@ use kartik\icons\Icon;
             'addon' => [
                 'append' => [
                     'content' =>
-                        Html::button(
-                            Icon::show('plus'),
-                            ['class'=>'btn btn-default add-property-'.$property_key]
-                        ) .
-                        Html::button(
-                            Icon::show('trash-o'),
-                            ['class'=>'btn btn-default remove-property-'.$property_key]
-                        ),
+                    Html::button(
+                        Icon::show('plus'),
+                        ['class'=>'btn btn-default add-property-'.$property_key]
+                    ) .
+                    Html::button(
+                        Icon::show('trash-o'),
+                        ['class'=>'btn btn-default remove-property-'.$property_key]
+                    ),
                     'asButton' => true,
                 ]
             ]
